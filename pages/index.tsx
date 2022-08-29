@@ -4,22 +4,28 @@ import {
   useSignatureDrop,
   useNetwork,
   useNetworkMismatch,
+  ConnectWallet,
+ 
 } from "@thirdweb-dev/react";
+
 import {
   ChainId,
   SignedPayload721WithQuantitySignature,
 } from "@thirdweb-dev/sdk";
 import type { NextPage } from "next";
 import styles from "../styles/Home.module.css";
+import { useState } from "react";
+
 
 const Home: NextPage = () => {
+   const [quantity, setQuantity] = useState(1); // default to 1
   const address = useAddress();
   const connectWithMetamask = useMetamask();
   const isMismatch = useNetworkMismatch();
   const [, switchNetwork] = useNetwork();
 
   const signatureDrop = useSignatureDrop(
-    "0xb90a18e9270d44F6e7D06e5Eac32C6Ea881CCaB2"
+    "0xE62d775E3Cc91659034dFC3b09a46259D6942c2c"
   );
 
   async function claim() {
@@ -29,12 +35,12 @@ const Home: NextPage = () => {
     }
 
     if (isMismatch) {
-      switchNetwork?.(ChainId.Goerli);
+      switchNetwork?.(ChainId.BinanceSmartChainMainnet);
       return;
     }
 
     try {
-      const tx = await signatureDrop?.claimTo(address, 1);
+      const tx = await signatureDrop?.claimTo(address, quantity);
       alert(`Succesfully minted NFT!`);
     } catch (error: any) {
       alert(error?.message);
@@ -48,7 +54,7 @@ const Home: NextPage = () => {
     }
 
     if (isMismatch) {
-      switchNetwork && switchNetwork(ChainId.Goerli);
+      switchNetwork && switchNetwork(ChainId.BinanceSmartChainMainnet);
       return;
     }
 
@@ -56,6 +62,7 @@ const Home: NextPage = () => {
       method: "POST",
       body: JSON.stringify({
         address: address,
+        quantity: quantity,
       }),
     });
 
@@ -83,6 +90,7 @@ const Home: NextPage = () => {
   }
 
   return (
+   
     <div className={styles.container}>
       {/* Top Section */}
       <h1 className={styles.h1}>Signature Drop</h1>
@@ -103,16 +111,37 @@ const Home: NextPage = () => {
       {address ? (
         <div className={styles.nftBoxGrid}>
           {/* Mint a new NFT */}
+          <p>Quantity</p>
+                <div className={styles.quantityContainer}>
+                  <button
+                    className={`${styles.quantityControlButton}`}
+                    onClick={() => setQuantity(quantity - 1)}
+                    disabled={quantity <= 1}
+                  >
+                    -
+                  </button>
+
+                  <h4>{quantity}</h4>
+
+                  <button
+                    className={`${styles.quantityControlButton}`}
+                    onClick={() => setQuantity(quantity + 1)}
+                    disabled={
+                      quantity >= 10
+                      
+                    }
+                  >
+                    +
+                  </button>
+                </div> 
           <div
             className={styles.optionSelectBox}
-            role="button"
+            role="button"      
             onClick={() => claim()}
           >
-            <img
-              src={`/icons/drop.webp`}
-              alt="drop"
-              className={styles.cardImg}
-            />
+            
+
+            
             <h2 className={styles.selectBoxTitle}>Claim NFT</h2>
             <p className={styles.selectBoxDescription}>
               Use the normal <code>claim</code> function to mint an NFT under
@@ -123,6 +152,7 @@ const Home: NextPage = () => {
           <div
             className={styles.optionSelectBox}
             role="button"
+            
             onClick={() => claimWithSignature()}
           >
             <img
@@ -137,16 +167,13 @@ const Home: NextPage = () => {
             </p>
           </div>
         </div>
-      ) : (
-        <button
-          className={styles.mainButton}
-          onClick={() => connectWithMetamask()}
-        >
-          Connect Wallet
-        </button>
-      )}
-    </div>
-  );
+      ) : <p>Please Connect Wallet Below</p>} <div className={styles.margintop}><ConnectWallet 
+  // Some customization of the button style
+  colorMode="light"
+        accentColor="#F213A4"
+        
+/></div> 
+    </div> )  
 };
 
 export default Home;
